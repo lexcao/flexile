@@ -1675,9 +1675,11 @@ export const companies = pgTable(
     lawyersEnabled: boolean("lawyers_enabled").notNull().default(false),
     conversionSharePriceUsd: numeric("conversion_share_price_usd"),
     jsonData: jsonb("json_data").notNull().$type<{ flags: string[] }>().default({ flags: [] }),
+    inviteLink: varchar("invite_link"),
   },
   (table) => [
     index("index_companies_on_external_id").using("btree", table.externalId.asc().nullsLast().op("text_ops")),
+    uniqueIndex("index_companies_on_invite_link").using("btree", table.inviteLink.asc().nullsLast().op("text_ops")),
   ],
 );
 
@@ -1747,33 +1749,6 @@ export const users = pgTable(
       table.resetPasswordToken.asc().nullsLast().op("text_ops"),
     ),
     index("index_users_on_clerk_id").using("btree", table.clerkId.asc().nullsLast().op("text_ops")),
-  ],
-);
-
-export const companyInviteLinks = pgTable(
-  "company_invite_links",
-  {
-    id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
-    companyId: bigint("company_id", { mode: "bigint" }).notNull(),
-    documentTemplateId: bigint("document_template_id", { mode: "bigint" }),
-    token: varchar().notNull(),
-    createdAt: timestamp("created_at", { precision: 6, mode: "date" }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { precision: 6, mode: "date" })
-      .notNull()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    uniqueIndex("idx_on_company_id_document_template_id_57bbad7c26").using(
-      "btree",
-      table.companyId.asc().nullsLast().op("int8_ops"),
-      table.documentTemplateId.asc().nullsLast().op("int8_ops"),
-    ),
-    index("index_company_invite_links_on_company_id").using("btree", table.companyId.asc().nullsLast().op("int8_ops")),
-    index("index_company_invite_links_on_document_template_id").using(
-      "btree",
-      table.documentTemplateId.asc().nullsLast().op("int8_ops"),
-    ),
-    uniqueIndex("index_company_invite_links_on_token").using("btree", table.token.asc().nullsLast().op("text_ops")),
   ],
 );
 

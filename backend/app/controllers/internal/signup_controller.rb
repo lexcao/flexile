@@ -5,7 +5,6 @@ class Internal::SignupController < Internal::BaseController
 
   def send_otp
     email = params[:email]
-    invitation_token = params[:invitation_token]
 
     return unless validate_email_param(email)
 
@@ -17,17 +16,6 @@ class Internal::SignupController < Internal::BaseController
 
     # Create a temporary user record for OTP verification
     temp_user = User.new(email: email)
-
-    # Handle invite link if invitation_token is provided
-    if invitation_token.present?
-      invite_link = CompanyInviteLink.find_by(token: invitation_token)
-      if invite_link
-        temp_user.signup_invite_link = invite_link
-      end
-    end
-
-    # TODO: Run basic validation when creating temp user
-    temp_user.save!(validate: false) # Skip validations for temp user
 
     return unless check_otp_rate_limit(temp_user)
 

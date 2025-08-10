@@ -5,12 +5,11 @@ import { usersFactory } from "@test/factories/users";
 import { fillOtp, login, logout } from "@test/helpers/auth";
 import { expect, test } from "@test/index";
 import { and, eq } from "drizzle-orm";
-import { companies, companyContractors, companyInviteLinks, users } from "@/db/schema";
+import { companies, companyContractors, users } from "@/db/schema";
 
 test.describe("Contractor Invite Link Joining flow", () => {
   let company: typeof companies.$inferSelect;
   let admin: typeof users.$inferSelect;
-  let inviteLink: typeof companyInviteLinks.$inferSelect | undefined;
 
   test.beforeEach(async () => {
     const result = await companiesFactory.create({
@@ -29,17 +28,6 @@ test.describe("Contractor Invite Link Joining flow", () => {
     await companyAdministratorsFactory.create({
       companyId: company.id,
       userId: admin.id,
-    });
-
-    await db.insert(companyInviteLinks).values({
-      companyId: company.id,
-      documentTemplateId: null,
-      token: encodeURIComponent(crypto.randomUUID()),
-      createdAt: new Date(),
-    });
-
-    inviteLink = await db.query.companyInviteLinks.findFirst({
-      where: eq(companyInviteLinks.companyId, company.id),
     });
   });
 

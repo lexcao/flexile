@@ -19,7 +19,7 @@ export default async function AcceptInvitationPage({
     body: JSON.stringify({ token }),
     headers: { "Content-Type": "application/json" },
   });
-  if (response.status === 401) return redirect(`/signup?invitation_token=${encodeURIComponent(token)}`);
+  if (response.status === 401) return redirect(`/signup?redirect_url=${encodeURIComponent(`/invite/${token}`)}`);
   if (response.ok) return redirect("/dashboard");
 
   return (
