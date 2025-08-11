@@ -14,7 +14,7 @@ class RemoveCompanyInviteLinks < ActiveRecord::Migration[8.0]
       t.string :token, null: false
       t.timestamps
     end
-    remove_column :users, :signup_invite_link_id, :bigint
     remove_index :users, :signup_invite_link_id
+    remove_column :users, :signup_invite_link_id, :bigint
   end
 end
