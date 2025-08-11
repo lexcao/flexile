@@ -1,26 +1,33 @@
-import { headers } from "next/headers";
+"use client";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { assertDefined } from "@/utils/assert";
-import { accept_invite_links_url } from "@/utils/routes";
+import { redirect, useParams } from "next/navigation";
+import { INVITATION_TOKEN_COOKIE_MAX_AGE, INVITATION_TOKEN_COOKIE_NAME } from "@/models/constants";
+import { request } from "@/utils/request";
+import { accept_invite_links_path } from "@/utils/routes";
 
-export default async function AcceptInvitationPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const headersList = await headers();
-  let { token } = await searchParams;
-  if (Array.isArray(token)) token = token[0];
-  if (!token) throw notFound();
-  const host = assertDefined(headersList.get("Host"));
-  const response = await fetch(accept_invite_links_url({ host }), {
-    method: "POST",
-    body: JSON.stringify({ token }),
-    headers: { "Content-Type": "application/json" },
+export default function AcceptInvitationPage() {
+  const { token } = useParams<{ token: string }>();
+  const { data: response } = useQuery({
+    queryKey: ["accept_invite_link", token],
+    queryFn: async () =>
+      request({ url: accept_invite_links_path(), method: "POST", accept: "json", jsonData: { token } }),
   });
-  if (response.status === 401) return redirect(`/signup?redirect_url=${encodeURIComponent(`/invite/${token}`)}`);
-  if (response.ok) return redirect("/dashboard");
+
+  if (!response) {
+    return (
+      <div className="flex flex-col items-center rounded-xl bg-white p-8 shadow-lg">
+        <div className="border-muted mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-black" />
+        <div className="text-md font-semibold">Verifying invitation...</div>
+      </div>
+    );
+  }
+
+  if (response.status === 401) {
+    document.cookie = `${INVITATION_TOKEN_COOKIE_NAME}=${token}; path=/; max-age=${INVITATION_TOKEN_COOKIE_MAX_AGE}`;
+    throw redirect(`/signup?${new URLSearchParams({ redirect_url: `/invite/${token}` })}`);
+  }
+  if (response.ok) throw redirect("/dashboard");
 
   return (
     <div className="flex flex-col items-center">
