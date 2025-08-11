@@ -31,13 +31,13 @@ RSpec.describe HelperUserInfoService do
           {
             status: "Issued",
             amount: 123_45,
-            net_amount: nil,
+            net_amount: 123_45,
             company: "Acme",
           },
           {
             status: "Paid",
             amount: 23_31,
-            net_amount: nil,
+            net_amount: 23_31,
             company: "Gumroad",
           }
         ],
@@ -48,7 +48,7 @@ RSpec.describe HelperUserInfoService do
             cash_amount: 30000,
             equity_amount: 20000,
             company: "Gumroad",
-            invoice_date: anything,
+            invoice_date: Date.current,
           }
         ],
       }
