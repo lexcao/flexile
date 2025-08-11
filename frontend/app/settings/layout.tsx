@@ -85,7 +85,7 @@ const companyLinks = [
     isVisible: (user: CurrentUser) => !!user.roles.administrator,
   },
 ];
-export function SettingsLayout({ children }: { children: React.ReactNode }) {
+function SettingsLayout({ children }: { children: React.ReactNode }) {
   const user = useCurrentUser();
   const pathname = usePathname();
   const filteredPersonalLinks = personalLinks.filter((link) => link.isVisible(user));
