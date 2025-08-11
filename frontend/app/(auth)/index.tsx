@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,7 +34,6 @@ export function AuthPage({
   onVerifyOtp?: (data: { email: string; otp: string }) => Promise<void>;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const sendOtp = useMutation({
     mutationFn: async (values: { email: string }) => {
       const response = await request({
@@ -65,7 +64,7 @@ export function AuthPage({
       const session = await getSession();
       if (!session?.user.email) throw new Error("Invalid verification code");
 
-      const redirectUrl = searchParams.get("redirect_url");
+      const redirectUrl = new URLSearchParams(window.location.search).get("redirect_url");
       router.replace(
         // @ts-expect-error - Next currently does not allow checking this at runtime - the leading / ensures this is safe
         redirectUrl && redirectUrl.startsWith("/") && !redirectUrl.startsWith("//") ? redirectUrl : "/dashboard",
