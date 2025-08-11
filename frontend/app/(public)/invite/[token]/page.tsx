@@ -12,6 +12,7 @@ export default function AcceptInvitationPage() {
     queryKey: ["accept_invite_link", token],
     queryFn: async () =>
       request({ url: accept_invite_links_path(), method: "POST", accept: "json", jsonData: { token } }),
+    gcTime: 0,
   });
 
   if (!response) {

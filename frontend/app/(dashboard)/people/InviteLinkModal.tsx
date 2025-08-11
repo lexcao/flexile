@@ -3,7 +3,7 @@ import { Copy } from "lucide-react";
 import React, { useState } from "react";
 import { z } from "zod";
 import CopyButton from "@/components/CopyButton";
-import { MutationStatusButton } from "@/components/MutationButton";
+import MutationButton from "@/components/MutationButton";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -62,13 +62,7 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
-            <Input
-              id="contractor-invite-link"
-              className="text-foreground text-sm"
-              readOnly
-              value={invite?.invite_link}
-              aria-label="Link"
-            />
+            <Input className="text-foreground text-sm" readOnly value={invite?.invite_link} aria-label="Link" />
           </div>
           <DialogFooter>
             <Button variant="outline" size="default" onClick={() => setShowResetLinkModal(true)}>
@@ -95,7 +89,7 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
               <Button variant="outline" onClick={() => setShowResetLinkModal(false)}>
                 Cancel
               </Button>
-              <MutationStatusButton mutation={resetMutation}>Reset link</MutationStatusButton>
+              <MutationButton mutation={resetMutation}>Reset link</MutationButton>
             </div>
           </div>
         </DialogContent>
