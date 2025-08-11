@@ -18,6 +18,13 @@ test.describe("Contractor Invite Link", () => {
     await expect(page.getByRole("button", { name: "Copy" })).toBeEnabled();
     await expect(page.getByRole("textbox", { name: "Link" })).toBeVisible();
 
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: async () => Promise.resolve() },
+        configurable: true,
+      });
+    });
+
     await page.getByRole("button", { name: "Copy" }).click();
     await expect(page.getByText("Copied!")).toBeVisible();
 
