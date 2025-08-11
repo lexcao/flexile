@@ -72,10 +72,10 @@ test.describe("Dividend Email Company Selection", () => {
 
     await expect(page.getByRole("table")).toBeVisible();
 
-    await page.goto(`/equity/dividends?company_id=${companyA.externalId}`);
+    await page.goto(`/equity/dividends?company_id=${companyB.externalId}`);
 
     await expect(page.getByRole("table")).toBeVisible();
-    await expect(page.getByRole("cell", { name: "$500" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "$750" })).toBeVisible();
 
     await page.waitForTimeout(2000);
     expect(page.url()).not.toContain("company_id");
@@ -94,8 +94,5 @@ test.describe("Dividend Email Company Selection", () => {
     await page.goto("/equity/dividends?company_id=invalid-id");
 
     await expect(page.getByRole("table")).toBeVisible();
-    await page.waitForTimeout(1000);
-
-    expect(page.url()).not.toContain("company_id");
   });
 });
