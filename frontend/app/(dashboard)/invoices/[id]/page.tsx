@@ -1,5 +1,6 @@
 "use client";
 
+import { ExclamationTriangleIcon as _ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import { InformationCircleIcon, PaperClipIcon, PencilIcon, PrinterIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useMutation } from "@tanstack/react-query";
 import { CircleAlert, Trash2 } from "lucide-react";
