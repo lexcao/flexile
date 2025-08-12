@@ -1549,7 +1549,7 @@ export const companyContractors = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
     endedAt: timestamp("ended_at", { precision: 6, mode: "date" }),
-    role: varchar("role").notNull(),
+    role: varchar("role"),
     externalId: varchar("external_id").$default(nanoid).notNull(),
     payRateType: integer("pay_rate_type").$type<PayRateType>().default(PayRateType.Hourly).notNull(),
     payRateInSubunits: integer("pay_rate_in_subunits"),

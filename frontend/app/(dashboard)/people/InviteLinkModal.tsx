@@ -47,7 +47,6 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
       });
       await queryClient.setQueryData(["companyInviteLink", company.id], inviteLinkSchema.parse(await response.json()));
       setShowResetLinkModal(false);
-      return inviteLinkSchema.parse(await response.json());
     },
   });
 
@@ -62,7 +61,7 @@ const InviteLinkModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: 
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
-            <Input className="text-foreground text-sm" readOnly value={invite?.invite_link} aria-label="Link" />
+            <Input className="text-foreground text-sm" readOnly value={invite?.invite_link ?? ""} aria-label="Link" />
           </div>
           <DialogFooter>
             <Button variant="outline" size="default" onClick={() => setShowResetLinkModal(true)}>

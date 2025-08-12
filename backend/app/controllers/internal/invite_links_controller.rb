@@ -8,7 +8,7 @@ class Internal::InviteLinksController < ApplicationController
     cookies.delete("invitation_token")
 
     if result[:success]
-      cookies[current_user_selected_company_cookie_name] = result[:company].external_id
+      cookies.permanent[current_user_selected_company_cookie_name] = result[:company].external_id
       head :no_content
     else
       render json: { error_message: result[:error] }, status: :unprocessable_entity
