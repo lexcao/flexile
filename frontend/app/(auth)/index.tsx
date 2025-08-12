@@ -172,7 +172,7 @@ export function AuthPage({
 
           {!sendOtp.isSuccess ? (
             <div className="space-y-4">
-              <Button type="button" variant="outline" className="w-full" onClick={() => signIn("google")}>
+              <Button type="button" variant="outline" className="w-fule" onClick={() => void signIn("google")}>
                 <Image
                   className="mr-2 size-4 brightness-0"
                   alt="Google icon"
