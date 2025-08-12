@@ -67,10 +67,6 @@ export const companyUpdatesRouter = createRouter({
       .values({
         ...pick(input, ["title", "body"]),
         companyId: ctx.company.id,
-        period: null,
-        periodStartedOn: null,
-        showRevenue: false,
-        showNetIncome: false,
       })
       .returning();
     return assertDefined(update).externalId;
@@ -83,10 +79,6 @@ export const companyUpdatesRouter = createRouter({
       .set({
         ...pick(input, ["title", "body"]),
         companyId: ctx.company.id,
-        period: null,
-        periodStartedOn: null,
-        showRevenue: false,
-        showNetIncome: false,
       })
       .where(byId(ctx, input.id))
       .returning();
