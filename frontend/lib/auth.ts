@@ -1,8 +1,10 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { z } from "zod";
 import env from "@/env";
 import { assertDefined } from "@/utils/assert";
+import { oauth_index_url } from "@/utils/routes";
 
 const otpLoginSchema = z.object({
   email: z.string().email(),
@@ -11,6 +13,10 @@ const otpLoginSchema = z.object({
 
 export const authOptions = {
   providers: [
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
     CredentialsProvider({
       id: "otp",
       name: "Email OTP",
@@ -84,12 +90,60 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (!account || account.type === "credentials") {
+        return true;
+      }
+
+      try {
+        const response = await fetch(oauth_index_url(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            provider: account.provider,
+            email: user.email,
+            uid: user.id,
+            token: env.API_SECRET_TOKEN,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            z.object({ error: z.string() }).safeParse(await response.json()).data?.error || "Oauth failed",
+          );
+        }
+
+        const data = z
+          .object({
+            user: z.object({
+              id: z.number(),
+              email: z.string(),
+              name: z.string().nullable(),
+              legal_name: z.string().nullable(),
+              preferred_name: z.string().nullable(),
+            }),
+            jwt: z.string(),
+          })
+          .parse(await response.json());
+
+        user.id = data.user.id.toString();
+        user.name = data.user.name ?? "";
+        user.legalName = data.user.legal_name ?? "";
+        user.preferredName = data.user.preferred_name ?? "";
+        user.jwt = data.jwt;
+        return true;
+      } catch {
+        return false;
+      }
+    },
     jwt({ token, user }) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- next-auth types are wrong
       if (!user) return token;
+
       token.jwt = user.jwt;
       token.legalName = user.legalName ?? "";
       token.preferredName = user.preferredName ?? "";
+
       return token;
     },
     session({ session, token }) {
