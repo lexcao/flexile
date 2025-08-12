@@ -76,7 +76,6 @@ export function AuthPage({
       );
     },
   });
-
   const emailForm = useForm({
     resolver: zodResolver(emailSchema),
   });

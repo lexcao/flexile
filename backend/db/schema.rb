@@ -925,7 +925,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_11_145025) do
     t.string "otp_secret_key"
     t.integer "otp_failed_attempts_count", default: 0, null: false
     t.datetime "otp_first_failed_at"
-    t.bigint "signup_invite_link_id"
     t.string "google_uid"
     t.index ["clerk_id"], name: "index_users_on_clerk_id", unique: true
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
