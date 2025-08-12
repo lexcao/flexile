@@ -139,11 +139,9 @@ export const authOptions = {
     jwt({ token, user }) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- next-auth types are wrong
       if (!user) return token;
-
       token.jwt = user.jwt;
       token.legalName = user.legalName ?? "";
       token.preferredName = user.preferredName ?? "";
-
       return token;
     },
     session({ session, token }) {
