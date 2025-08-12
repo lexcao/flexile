@@ -16,9 +16,6 @@ type Invoice = RouterOutput["invoices"]["list"][number] | RouterOutput["invoices
 export const EDITABLE_INVOICE_STATES: Invoice["status"][] = ["received", "rejected"];
 export const DELETABLE_INVOICE_STATES: Invoice["status"][] = ["received", "approved"];
 
-export const taxRequirementsMet = (invoice: Invoice) =>
-  !!invoice.contractor.user.complianceInfo?.taxInformationConfirmedAt;
-
 export const useCanSubmitInvoices = () => {
   const user = useCurrentUser();
   const company = useCurrentCompany();
@@ -160,7 +157,7 @@ export const ApproveButton = ({
       param={{ [pay ? "pay_ids" : "approve_ids"]: [invoice.id] }}
       successText={pay ? "Payment initiated" : "Approved!"}
       loadingText={pay ? "Sending payment..." : "Approving..."}
-      disabled={!!pay && (!company.completedPaymentMethodSetup || !taxRequirementsMet(invoice))}
+      disabled={!!pay && !company.completedPaymentMethodSetup}
     >
       {pay ? (
         <>
