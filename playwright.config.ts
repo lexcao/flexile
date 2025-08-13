@@ -1,5 +1,6 @@
 import nextEnv from "@next/env";
-import { defineConfig, devices } from "@playwright/test";
+import { devices } from "@playwright/test";
+import { defineConfig } from "next/experimental/testmode/playwright.js";
 
 process.env.NODE_ENV = "test";
 nextEnv.loadEnvConfig(process.cwd());
@@ -38,6 +39,7 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
       dependencies: ["setup"],
+      testMatch: "tests/**/*.spec.ts",
     },
   ],
   tsconfig: "./e2e/tsconfig.json",
@@ -46,5 +48,7 @@ export default defineConfig({
     url: "https://test.flexile.dev:3101",
     reuseExistingServer: !process.env.CI,
     ignoreHTTPSErrors: true,
+    stdout: "pipe",
+    stderr: "pipe",
   },
 });
