@@ -176,9 +176,9 @@ export function AuthPage({
 
           {!sendOtp.isSuccess ? (
             <div className="space-y-4">
-              <Button type="button" variant="outline" className="w-full" onClick={() => void signIn("google")}>
+              <Button type="button" variant="primary" className="w-full" onClick={() => void signIn("google")}>
                 <Image
-                  className="mr-2 size-4 brightness-0"
+                  className="mr-2 size-4 brightness-0 invert"
                   alt="Google icon"
                   width="24"
                   height="24"
@@ -219,7 +219,13 @@ export function AuthPage({
                     </FormItem>
                   )}
                 />
-                <MutationStatusButton mutation={sendOtp} type="submit" className="w-full" loadingText="Sending...">
+                <MutationStatusButton
+                  idleVariant="outline"
+                  mutation={sendOtp}
+                  type="submit"
+                  className="w-full"
+                  loadingText="Sending..."
+                >
                   {sendOtpText}
                 </MutationStatusButton>
 
