@@ -6,28 +6,18 @@ class Internal::OauthController < Internal::BaseController
   skip_before_action :verify_authenticity_token
 
   def create
-    uid = params[:uid]
     email = params[:email]
-    provider = params[:provider]
+    return unless validate_params(email)
 
-    return unless validate_params(uid, email, provider)
-
-    uid_field = [provider, "uid"].join("_")
-    user = User.find_by(uid_field => uid)
-    user ||= User.find_by(email: email)
+    user = User.find_by(email: email)
 
     if user
-      user.update!({
-        uid_field => uid,
-        current_sign_in_at: Time.current,
-      })
-
+      user.update!(current_sign_in_at: Time.current)
       success_response_with_jwt(user)
       return
     end
 
     user = signup(User.new({
-      uid_field => uid,
       email: email,
       signup_invite_link: invite_link,
       current_sign_in_at: Time.current,
@@ -39,14 +29,9 @@ class Internal::OauthController < Internal::BaseController
   end
 
   private
-    def validate_params(uid, email, provider)
-      if provider.blank? || email.blank? || uid.blank?
-        render json: { error: "Uid, email and provider are required" }, status: :bad_request
-        return false
-      end
-
-      unless provider == "google"
-        render json: { error: "Provider #{provider} not supported" }, status: :bad_request
+    def validate_params(email)
+      if email.blank?
+        render json: { error: "Email is required" }, status: :bad_request
         return false
       end
 
@@ -62,10 +47,10 @@ class Internal::OauthController < Internal::BaseController
 
     def signup(user)
       ApplicationRecord.transaction do
-        user.save!(
-          confirmed_at: Time.current,
-          invitation_accepted_at: Time.current
-        )
+        user.confirmed_at = Time.current
+        user.invitation_accepted_at = Time.current
+        user.save!
+
         user.tos_agreements.create!(ip_address: request.remote_ip)
 
         unless user.signup_invite_link
