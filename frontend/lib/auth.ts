@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -10,6 +11,22 @@ const otpLoginSchema = z.object({
   email: z.string().email(),
   otp: z.string().length(6),
 });
+
+export const lastSignInProvider = {
+  set: async (provider: string) => {
+    const cookieStore = await cookies();
+    cookieStore.set("last_signin_provider", provider, {
+      maxAge: 30 * 24 * 60 * 60,
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+    });
+  },
+  get: async (): Promise<string | undefined> => {
+    const cookieStore = await cookies();
+    return cookieStore.get("last_signin_provider")?.value;
+  },
+};
 
 export const authOptions = {
   providers: [
@@ -91,7 +108,10 @@ export const authOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      if (!account || account.type === "credentials") {
+      if (!account) return true;
+
+      await lastSignInProvider.set(account.provider);
+      if (account.type === "credentials") {
         return true;
       }
 
@@ -100,9 +120,7 @@ export const authOptions = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            provider: account.provider,
             email: user.email,
-            uid: user.id,
             token: env.API_SECRET_TOKEN,
           }),
         });
