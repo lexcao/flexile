@@ -38,7 +38,6 @@ export default defineConfig({
         viewport: { width: 1920, height: 1080 },
       },
       dependencies: ["setup"],
-      testMatch: "tests/**/*.spec.ts",
     },
   ],
   tsconfig: "./e2e/tsconfig.json",
