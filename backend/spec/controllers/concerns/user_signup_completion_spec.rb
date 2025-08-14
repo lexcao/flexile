@@ -59,9 +59,10 @@ RSpec.describe UserSignupCompletion do
         allow_any_instance_of(User).to receive(:save!).and_raise(ActiveRecord::RecordInvalid, new_user)
 
         expect do
-          post :test_complete_user_signup, params: { user_id: new_user.id }
-        end.to raise_error(ActiveRecord::RecordInvalid)
-          .and not_change(TosAgreement, :count)
+          expect do
+            post :test_complete_user_signup, params: { user_id: new_user.id }
+          end.to raise_error(ActiveRecord::RecordInvalid)
+        end.not_to change(TosAgreement, :count)
       end
     end
 
