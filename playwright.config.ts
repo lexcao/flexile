@@ -1,6 +1,5 @@
 import nextEnv from "@next/env";
-import { devices } from "@playwright/test";
-import { defineConfig } from "next/experimental/testmode/playwright.js";
+import { defineConfig, devices } from "@playwright/test";
 
 process.env.NODE_ENV = "test";
 nextEnv.loadEnvConfig(process.cwd());
