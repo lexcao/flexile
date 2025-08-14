@@ -73,53 +73,11 @@ export const authOptions = {
           placeholder: "Enter 6-digit OTP",
         },
       },
-      async authorize(credentials, req) {
+      authorize(credentials) {
         const validation = otpLoginSchema.safeParse(credentials);
-
         if (!validation.success) throw new Error("Invalid email or OTP");
 
-        try {
-          const response = await fetch(`${assertDefined(req.headers?.origin)}/internal/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: validation.data.email,
-              otp_code: validation.data.otp,
-              token: env.API_SECRET_TOKEN,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(
-              z.object({ error: z.string() }).safeParse(await response.json()).data?.error ||
-                "Authentication failed, please try again.",
-            );
-          }
-
-          const data = z
-            .object({
-              user: z.object({
-                id: z.number(),
-                email: z.string(),
-                name: z.string().nullable(),
-                legal_name: z.string().nullable(),
-                preferred_name: z.string().nullable(),
-              }),
-              jwt: z.string(),
-            })
-            .parse(await response.json());
-
-          return {
-            ...data.user,
-            id: data.user.id.toString(),
-            name: data.user.name ?? "",
-            legalName: data.user.legal_name ?? "",
-            preferredName: data.user.preferred_name ?? "",
-            jwt: data.jwt,
-          };
-        } catch {
-          return null;
-        }
+        return { email: validation.data.email, jwt: "", id: "", name: "" };
       },
     }),
   ],
@@ -131,18 +89,24 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, credentials }) {
       if (!account) return true;
 
       await lastSignInProvider.set(account.provider);
-      if (account.provider === "otp") {
-        return true;
-      }
 
+      let data = null;
       try {
-        const data = await requestSignIn("/internal/oauth", {
-          email: user.email,
-        });
+        if (account.provider === "otp") {
+          const input = otpLoginSchema.parse(credentials);
+          data = await requestSignIn("/internal/login", {
+            email: input.email,
+            otp_code: input.otp,
+          });
+        } else {
+          data = await requestSignIn("/internal/oauth", {
+            email: user.email,
+          });
+        }
 
         user.id = data.user.id.toString();
         user.email = data.user.email;
