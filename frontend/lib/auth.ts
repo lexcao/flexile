@@ -1,6 +1,8 @@
 import { cookies, headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import type { Provider } from "next-auth/providers/index";
 import { z } from "zod";
 import env from "@/env";
 import { assertDefined } from "@/utils/assert";
@@ -13,7 +15,7 @@ const otpLoginSchema = z.object({
 export const lastSignInProvider = {
   set: async (provider: string) => {
     const cookieStore = await cookies();
-    cookieStore.set("last_signin_provider", provider, {
+    cookieStore.set("last_sign_in_provider", provider, {
       maxAge: 30 * 24 * 60 * 60,
       httpOnly: true,
       secure: true,
@@ -22,29 +24,40 @@ export const lastSignInProvider = {
   },
   get: async (): Promise<string | undefined> => {
     const cookieStore = await cookies();
-    return cookieStore.get("last_signin_provider")?.value;
+    return cookieStore.get("last_sign_in_provider")?.value;
   },
 };
 
+function withTestHelper(provider: Provider): Provider {
+  if (process.env.RAILS_ENV !== "test") {
+    return provider;
+  }
+
+  // create a test provider to bypass Oauth flow and mock login
+  // refer to @test/helpers/auth#mockLogin
+  return CredentialsProvider({
+    id: provider.id,
+    name: provider.name,
+    credentials: {
+      email: {
+        label: "Email",
+        type: "email",
+      },
+    },
+    authorize(credentials) {
+      return credentials ? { email: credentials.email, jwt: "", id: "", name: "" } : null;
+    },
+  });
+}
+
 export const authOptions = {
   providers: [
-    // GoogleProvider({
-    //   clientId: env.GOOGLE_CLIENT_ID ?? "",
-    //   clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
-    // }),
-    CredentialsProvider({
-      id: "google",
-      name: "Goole Test",
-      credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-        },
-      },
-      authorize(credentials) {
-        return credentials ? { email: credentials.email, jwt: "", id: "", name: "" } : null;
-      },
-    }),
+    withTestHelper(
+      GoogleProvider({
+        clientId: env.GOOGLE_CLIENT_ID ?? "",
+        clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+      }),
+    ),
     CredentialsProvider({
       id: "otp",
       name: "Email OTP",
