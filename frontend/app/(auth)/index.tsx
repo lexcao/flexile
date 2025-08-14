@@ -23,14 +23,14 @@ export function AuthPage({
   description,
   switcher,
   sendOtpUrl,
-  sendOtpText,
+  ctaText,
   onVerifyOtp,
 }: {
   title: string;
   description: string;
   switcher: React.ReactNode;
   sendOtpUrl: string;
-  sendOtpText: string;
+  ctaText: string;
   onVerifyOtp?: (data: { email: string; otp: string }) => Promise<void>;
 }) {
   const router = useRouter();
@@ -188,7 +188,7 @@ export function AuthPage({
                   loading="lazy"
                   src="/google-icon.svg"
                 />
-                {sendOtpText} with Google
+                {ctaText} with Google
               </Button>
 
               <div className="flex items-center">
@@ -229,7 +229,7 @@ export function AuthPage({
                   className="w-full"
                   loadingText="Sending..."
                 >
-                  {sendOtpText}
+                  {ctaText}
                 </MutationStatusButton>
 
                 <div className="pt-6 text-center text-gray-600">{switcher}</div>

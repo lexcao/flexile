@@ -15,7 +15,7 @@ export default async function LoginPage() {
     <AuthPage
       title="Welcome back"
       description={description || "Use your work email to log in."}
-      sendOtpText="Log in"
+      ctaText="Log in"
       switcher={
         <>
           Don't have an account?{" "}
