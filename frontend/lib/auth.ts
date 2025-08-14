@@ -1,11 +1,10 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import type { Provider } from "next-auth/providers/index";
 import { z } from "zod";
 import env from "@/env";
-import { assertDefined } from "@/utils/assert";
 
 const otpLoginSchema = z.object({
   email: z.string().email(),
@@ -149,8 +148,7 @@ const userDataSchema = z.object({
 });
 
 async function requestSignIn(path: string, body: Record<string, string>): Promise<z.infer<typeof userDataSchema>> {
-  const baseURL = assertDefined((await headers()).get("origin"));
-  const response = await fetch(`${baseURL}${path}`, {
+  const response = await fetch(`${process.env.NEXTAUTH_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

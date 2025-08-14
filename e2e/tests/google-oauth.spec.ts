@@ -14,22 +14,10 @@ test("signup from signup page", async ({ page }) => {
   await page.goto("/signup");
   await page.getByRole("button", { name: "Sign up with Google" }).click();
   await page.waitForURL(/.*\/invoices.*/u);
+  await page.getByText("Add company details").waitFor();
 
-  const user = await takeOrThrow(
-    db.query.users.findFirst({
-      where: eq(users.email, email),
-      with: {
-        companyAdministrators: { with: { company: true } },
-      },
-    }),
-  );
-
-  if (!user) {
-    throw new Error("User should be defined after takeOrThrow");
-  }
-
-  expect(user.email).toBe(email);
-  expect(user.companyAdministrators).toHaveLength(1);
+  const user = await takeOrThrow(db.query.users.findFirst({ where: eq(users.email, email) }));
+  expect(user).toBeDefined();
 });
 
 test("signup from login page", async ({ page }) => {
@@ -41,18 +29,10 @@ test("signup from login page", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Log in with Google" }).click();
   await page.waitForURL(/.*\/invoices.*/u);
+  await page.getByText("Add company details").waitFor();
 
-  const user = await takeOrThrow(
-    db.query.users.findFirst({
-      where: eq(users.email, email),
-      with: {
-        companyAdministrators: { with: { company: true } },
-      },
-    }),
-  );
-
+  const user = await takeOrThrow(db.query.users.findFirst({ where: eq(users.email, email) }));
   expect(user).toBeDefined();
-  expect(user?.companyAdministrators).toHaveLength(1);
 });
 
 test("login", async ({ page }) => {
@@ -85,8 +65,6 @@ test("login with redirect_url", async ({ page }) => {
   await page.waitForURL(/.*\/people.*/u);
 
   await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
-
   await expect(page.getByText("Welcome back")).not.toBeVisible();
-
   expect(page.url()).toContain("/people");
 });

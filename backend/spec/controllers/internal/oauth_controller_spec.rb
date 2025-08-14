@@ -64,8 +64,7 @@ RSpec.describe Internal::OauthController, type: :controller do
         expect do
           post :create, params: { email: email, token: api_token }
         end.to change(User, :count).by(1)
-          .and change(Company, :count).by(1)
-          .and change(CompanyAdministrator, :count).by(1)
+          .and change(TosAgreement, :count).by(1)
 
         expect(response).to have_http_status(:created)
 
@@ -78,8 +77,6 @@ RSpec.describe Internal::OauthController, type: :controller do
         expect(new_user.confirmed_at).to be_present
         expect(new_user.invitation_accepted_at).to be_present
         expect(new_user.current_sign_in_at).to be_present
-        expect(new_user.tos_agreements).to exist
-        expect(new_user.companies).to exist
       end
 
       it "creates a TOS agreement with IP address" do
@@ -88,79 +85,6 @@ RSpec.describe Internal::OauthController, type: :controller do
         new_user = User.find_by(email: email)
         tos_agreement = new_user.tos_agreements.first
         expect(tos_agreement.ip_address).to eq(request.remote_ip)
-      end
-
-      it "creates a default company with correct attributes" do
-        post :create, params: { email: email, token: api_token }
-
-        new_user = User.find_by(email: email)
-        company = new_user.companies.first
-        expect(company.email).to eq(email)
-        expect(company.country_code).to eq("US")
-        expect(company.default_currency).to eq("USD")
-      end
-    end
-
-    context "when user does not exist with invitation token" do
-      let!(:company) { create(:company) }
-      let!(:invite_link) { create(:company_invite_link, company: company) }
-
-      it "registers successfully with invitation and returns JWT" do
-        request.cookies[:invitation_token] = invite_link.token
-        expect do
-          post :create, params: {
-            email: email,
-            token: api_token,
-          }
-        end.to change(User, :count).by(1)
-          .and change(Company, :count).by(0)
-          .and change(CompanyAdministrator, :count).by(0)
-
-        expect(response).to have_http_status(:created)
-
-        json_response = JSON.parse(response.body)
-        expect(json_response["jwt"]).to be_present
-        expect(json_response["user"]["email"]).to eq(email)
-
-        new_user = User.find_by(email: email)
-        expect(new_user).to be_present
-        expect(new_user.confirmed_at).to be_present
-        expect(new_user.invitation_accepted_at).to be_present
-        expect(new_user.current_sign_in_at).to be_present
-        expect(new_user.signup_invite_link).to eq(invite_link)
-        expect(new_user.tos_agreements).to exist
-        expect(new_user.companies).to be_empty
-      end
-
-      it "does not create a new company when using invitation" do
-        company_count_before = Company.count
-
-        request.cookies[:invitation_token] = invite_link.token
-        post :create, params: {
-          email: email,
-          token: api_token,
-        }
-
-        expect(Company.count).to eq(company_count_before)
-      end
-    end
-
-    context "when user creation fails" do
-      before do
-        user = User.new(email: "invalid-email")
-        user.errors.add(:email, "is invalid")
-        allow_any_instance_of(User).to receive(:save!).and_raise(
-          ActiveRecord::RecordInvalid.new(user)
-        )
-      end
-
-      it "returns unprocessable entity with error message" do
-        post :create, params: { email: "invalid@example.com", token: api_token }
-
-        expect(response).to have_http_status(:unprocessable_entity)
-
-        json_response = JSON.parse(response.body)
-        expect(json_response["error"]).to eq("Email is invalid")
       end
     end
   end

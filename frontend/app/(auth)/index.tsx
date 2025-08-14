@@ -53,6 +53,11 @@ export function AuthPage({
     },
   });
 
+  const redirectUrl = () => {
+    const redirectUrl = searchParams.get("redirect_url");
+    return redirectUrl && redirectUrl.startsWith("/") && !redirectUrl.startsWith("//") ? redirectUrl : "/dashboard";
+  };
+
   const verifyOtp = useMutation({
     mutationFn: async (values: { otp: string }) => {
       const email = emailForm.getValues("email");
@@ -65,11 +70,8 @@ export function AuthPage({
       const session = await getSession();
       if (!session?.user.email) throw new Error("Invalid verification code");
 
-      const redirectUrl = searchParams.get("redirect_url");
-      router.replace(
-        // @ts-expect-error - Next currently does not allow checking this at runtime - the leading / ensures this is safe
-        redirectUrl && redirectUrl.startsWith("/") && !redirectUrl.startsWith("//") ? redirectUrl : "/dashboard",
-      );
+      // @ts-expect-error - Next currently does not allow checking this at runtime - the leading / ensures this is safe
+      router.replace(redirectUrl());
     },
   });
   const emailForm = useForm({
@@ -172,7 +174,12 @@ export function AuthPage({
 
           {!sendOtp.isSuccess ? (
             <div className="space-y-4">
-              <Button type="button" variant="primary" className="w-full" onClick={() => void signIn("google")}>
+              <Button
+                type="button"
+                variant="primary"
+                className="w-full"
+                onClick={() => void signIn("google", { callbackUrl: redirectUrl() })}
+              >
                 <Image
                   className="mr-2 size-4 brightness-0 invert"
                   alt="Google icon"
