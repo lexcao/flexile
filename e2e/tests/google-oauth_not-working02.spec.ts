@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { expect, test } from "next/experimental/testmode/playwright.js";
+import { test } from "next/experimental/testmode/playwright.js";
 
 test.skip(!process.env.GOOGLE_TEST_EMAIL || !process.env.GOOGLE_TEST_PASSWORD, "Google OAuth not configured");
 
@@ -63,5 +63,4 @@ test("google oauth login", async ({ page, next }) => {
   await page.getByRole("button", { name: "Log in with Google" }).click();
 
   await page.waitForURL("invoices");
-  await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
 });

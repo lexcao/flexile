@@ -106,10 +106,10 @@ RSpec.describe Internal::OauthController, type: :controller do
       let!(:invite_link) { create(:company_invite_link, company: company) }
 
       it "registers successfully with invitation and returns JWT" do
+        request.cookies[:invitation_token] = invite_link.token
         expect do
           post :create, params: {
             email: email,
-            invitation_token: invite_link.token,
             token: api_token,
           }
         end.to change(User, :count).by(1)
@@ -135,9 +135,9 @@ RSpec.describe Internal::OauthController, type: :controller do
       it "does not create a new company when using invitation" do
         company_count_before = Company.count
 
+        request.cookies[:invitation_token] = invite_link.token
         post :create, params: {
           email: email,
-          invitation_token: invite_link.token,
           token: api_token,
         }
 

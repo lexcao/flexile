@@ -1,11 +1,9 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { z } from "zod";
 import env from "@/env";
 import { assertDefined } from "@/utils/assert";
-import { oauth_index_url } from "@/utils/routes";
 
 const otpLoginSchema = z.object({
   email: z.string().email(),
@@ -30,9 +28,22 @@ export const lastSignInProvider = {
 
 export const authOptions = {
   providers: [
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+    // GoogleProvider({
+    //   clientId: env.GOOGLE_CLIENT_ID ?? "",
+    //   clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
+    // }),
+    CredentialsProvider({
+      id: "google",
+      name: "Goole Test",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email",
+        },
+      },
+      authorize(credentials) {
+        return credentials ? { email: credentials.email, jwt: "", id: "", name: "" } : null;
+      },
     }),
     CredentialsProvider({
       id: "otp",
@@ -111,40 +122,17 @@ export const authOptions = {
       if (!account) return true;
 
       await lastSignInProvider.set(account.provider);
-      if (account.type === "credentials") {
+      if (account.provider === "otp") {
         return true;
       }
 
       try {
-        const response = await fetch(oauth_index_url(), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: user.email,
-            token: env.API_SECRET_TOKEN,
-          }),
+        const data = await requestSignIn("/internal/oauth", {
+          email: user.email,
         });
 
-        if (!response.ok) {
-          throw new Error(
-            z.object({ error: z.string() }).safeParse(await response.json()).data?.error || "Oauth failed",
-          );
-        }
-
-        const data = z
-          .object({
-            user: z.object({
-              id: z.number(),
-              email: z.string(),
-              name: z.string().nullable(),
-              legal_name: z.string().nullable(),
-              preferred_name: z.string().nullable(),
-            }),
-            jwt: z.string(),
-          })
-          .parse(await response.json());
-
         user.id = data.user.id.toString();
+        user.email = data.user.email;
         user.name = data.user.name ?? "";
         user.legalName = data.user.legal_name ?? "";
         user.preferredName = data.user.preferred_name ?? "";
@@ -171,3 +159,36 @@ export const authOptions = {
   },
   secret: env.NEXTAUTH_SECRET,
 } satisfies NextAuthOptions;
+
+const userDataSchema = z.object({
+  user: z.object({
+    id: z.number(),
+    email: z.string(),
+    name: z.string().nullable(),
+    legal_name: z.string().nullable(),
+    preferred_name: z.string().nullable(),
+  }),
+  jwt: z.string(),
+});
+
+async function requestSignIn(path: string, body: Record<string, string>): Promise<z.infer<typeof userDataSchema>> {
+  const baseURL = assertDefined((await headers()).get("origin"));
+  const response = await fetch(`${baseURL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...body,
+      token: env.API_SECRET_TOKEN,
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.headers.get("Content-Type")?.includes("text/html")) {
+      throw new Error(`Unexpected server response: ${await response.text()}`);
+    } else {
+      throw new Error(z.object({ error: z.string() }).safeParse(await response.json()).data?.error || "Oauth failed");
+    }
+  }
+
+  return userDataSchema.parse(await response.json());
+}

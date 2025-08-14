@@ -39,7 +39,7 @@ class Internal::OauthController < Internal::BaseController
     end
 
     def invite_link
-      invitation_token = params[:invitation_token]
+      invitation_token = cookies["invitation_token"]
       if invitation_token.present?
         CompanyInviteLink.find_by(token: invitation_token)
       end
