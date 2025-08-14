@@ -183,8 +183,8 @@ export function AuthPage({
                 <Image
                   className="mr-2 size-4 brightness-0 invert"
                   alt="Google icon"
-                  width="24"
-                  height="24"
+                  width={24}
+                  height={24}
                   loading="lazy"
                   src="/google-icon.svg"
                 />
