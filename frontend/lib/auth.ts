@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import type { Provider } from "next-auth/providers/index";
 import { z } from "zod";
@@ -57,6 +58,10 @@ export const authOptions = {
         clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
       }),
     ),
+    GitHubProvider({
+      clientId: env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
+    }),
     CredentialsProvider({
       id: "otp",
       name: "Email OTP",

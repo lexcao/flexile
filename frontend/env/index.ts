@@ -33,6 +33,8 @@ const env = z
     NEXTAUTH_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
   })
   .parse(process.env);
 
