@@ -191,6 +191,23 @@ export function AuthPage({
                 {ctaText} with Google
               </Button>
 
+              <Button
+                type="button"
+                variant="default"
+                className="w-full"
+                onClick={() => void signIn("github", { callbackUrl: redirectUrl() })}
+              >
+                <Image
+                  className="mr-2 size-4 brightness-0 invert"
+                  alt="GitHub icon"
+                  width="24"
+                  height="24"
+                  loading="lazy"
+                  src="/github-icon.svg"
+                />
+                {ctaText} with GitHub
+              </Button>
+
               <div className="flex items-center">
                 <span className="h-px w-full bg-gray-100" />
                 <span className="px-4">or</span>

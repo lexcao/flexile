@@ -8,6 +8,7 @@ export default async function LoginPage() {
 
   const description = {
     google: "You used Google to log in last time.",
+    github: "You used GitHub to log in last time.",
     otp: "You used your work email last time.",
   }[provider];
 
